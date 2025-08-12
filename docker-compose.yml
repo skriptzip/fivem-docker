@@ -15,13 +15,8 @@ services:
       - ./resources:/serverdata/serverfiles/resources
       - ./cache:/serverdata/serverfiles/cache
     environment:
-      - SERVER_KEY=replace
+      - SERVER_KEY=replaceme
       - GAME_CONFIG=server.cfg
-      - START_VARS=+set sv_hostname "My FiveM Server" +set sv_maxclients 32
-      - DATA_PERM=770
-      - UMASK=000
-      - UID=99
-      - GID=100
     stdin_open: true
     tty: true
 
