@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  fivem-server:
+    build: .
+    container_name: fivem-server
+    restart: unless-stopped
+    ports:
+      - "30120:30120/tcp"  # FiveM server port
+      - "30120:30120/udp"  # FiveM server port (UDP)
+      - "30121:30121/tcp"  # FiveM server query port
+      - "30121:30121/udp"  # FiveM server query port (UDP)
+    volumes:
+      - ./serverdata:/serverdata
+      - ./resources:/serverdata/serverfiles/resources
+      - ./cache:/serverdata/serverfiles/cache
+    environment:
+      - SERVER_KEY=replace
+      - GAME_CONFIG=server.cfg
+      - START_VARS=+set sv_hostname "My FiveM Server" +set sv_maxclients 32
+      - DATA_PERM=770
+      - UMASK=000
+      - UID=99
+      - GID=100
+    stdin_open: true
+    tty: true
+

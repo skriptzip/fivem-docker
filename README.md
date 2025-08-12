@@ -6,7 +6,6 @@ To run this container you must provide a valid Server Key (you can get them from
 
 Update Notice: Simply restart the container and it will download the newest version or if you set 'Manual Updates' to 'true' place the new fx.tar.xz in the main directory and restart the container.
 
-**WEB CONSOLE:** You can connect to the FiveM console by opening your browser and go to HOSTIP:9016 (eg: 192.168.1.1:9016) or click on WebUI on the Docker page within Unraid.
 
 ## Env params
 | Name | Value | Example |
@@ -35,5 +34,7 @@ docker run --name FiveM -d \
     --restart=unless-stopped \
     skriptzip/fivemserver
 ```
+
+https://artifacts.jgscripts.com/
 
 Forked from ich777
