@@ -11,11 +11,9 @@ services:
       - "30121:30121/tcp"  # FiveM server query port
       - "30121:30121/udp"  # FiveM server query port (UDP)
     volumes:
-      - ./serverdata:/serverdata
-      - ./resources:/serverdata/serverfiles/resources
-      - ./cache:/serverdata/serverfiles/cache
+      - ./serverdata:/serverdata/serverfiles
     environment:
-      - SERVER_KEY=replaceme
+      - SERVER_KEY=replace
       - GAME_CONFIG=server.cfg
     stdin_open: true
     tty: true
