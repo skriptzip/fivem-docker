@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   fivem-server:
     build: .
@@ -10,11 +8,11 @@ services:
       - "30120:30120/udp"  # FiveM server port (UDP)
       - "30121:30121/tcp"  # FiveM server query port
       - "30121:30121/udp"  # FiveM server query port (UDP)
+      - "40120:40120/tcp"  # txAdmin
     volumes:
       - ./serverdata:/serverdata/serverfiles
     environment:
       - SERVER_KEY=replace
-      - GAME_CONFIG=server.cfg
     stdin_open: true
     tty: true
 
