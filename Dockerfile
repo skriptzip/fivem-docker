@@ -1,46 +1,53 @@
-FROM debian:bookworm-slim
+ARG FIVEM_NUM=18443
+ARG FIVEM_VER=18443-746f079d418d6a05ae5fe78268bc1b4fd66ce738
+ARG DATA_VER=0e7ba538339f7c1c26d0e689aa750a336576cf02
 
-LABEL org.opencontainers.image.authors="info@skript.zip"
-LABEL org.opencontainers.image.source="https://github.com/skriptzip/fivem-docker"
+# =============================
+# Build Stage
+# =============================
+FROM ghcr.io/skriptzip/alpine:main AS builder
 
-RUN  echo "deb http://deb.debian.org/debian bookworm contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
-	apt-get update && apt-get -y upgrade && \
-	apt-get -y install --no-install-recommends wget locales procps && \
-	touch /etc/locale.gen && \
-	echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
-	locale-gen && \
-	apt-get -y install --reinstall ca-certificates && \
-	rm -rf /var/lib/apt/lists/*
+ARG FIVEM_VER
+ARG DATA_VER
 
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+WORKDIR /output
 
-RUN apt-get update && \
-	apt-get -y install --no-install-recommends xz-utils unzip screen && \
-	rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache wget xz tar \
+ && wget -O- https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/${FIVEM_VER}/fx.tar.xz \
+        | tar xJ --strip-components=1 \
+            --exclude alpine/dev --exclude alpine/proc \
+            --exclude alpine/run --exclude alpine/sys \
+ && mkdir -p /output/opt/cfx-server-data /output/usr/local/share \
+ && wget -O- https://github.com/citizenfx/cfx-server-data/archive/${DATA_VER}.tar.gz \
+        | tar xz --strip-components=1 -C opt/cfx-server-data
 
-ENV DATA_DIR="/serverdata"
-ENV SERVER_DIR="${DATA_DIR}/serverfiles"
-ENV GAME_CONFIG=""
-ENV SRV_ADR="https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/"
-ENV MANUAL_UPDATES=""
-ENV UMASK=000
-ENV UID=99
-ENV GID=100
-ENV SERVER_KEY="template"
-ENV START_VARS=""
-ENV DATA_PERM=770
-ENV USER="fivem"
+# Add config + entrypoint
+ADD server.cfg opt/cfx-server-data
+ADD entrypoint usr/bin/entrypoint
+RUN chmod +x /output/usr/bin/entrypoint
 
-RUN mkdir $DATA_DIR && \
-	mkdir $SERVER_DIR && \
-	useradd -d $SERVER_DIR -s /bin/bash $USER && \
-	chown -R $USER $DATA_DIR && \
-	ulimit -n 2048
+# =============================
+# Final Stage
+# =============================
+FROM scratch
 
-ADD /scripts/ /opt/scripts/
-RUN chmod -R 770 /opt/scripts/
+ARG FIVEM_VER
+ARG FIVEM_NUM
+ARG DATA_VER
 
-#Server Start
-ENTRYPOINT ["/opt/scripts/start.sh"]
+LABEL org.opencontainers.image.authors="you <you@example.com>" \
+      org.opencontainers.image.vendor="Custom" \
+      org.opencontainers.image.title="FiveM" \
+      org.opencontainers.image.url="https://fivem.net" \
+      org.opencontainers.image.description="FiveM dedicated server image" \
+      org.opencontainers.image.version=${FIVEM_NUM} \
+      io.fivem.version=${FIVEM_VER} \
+      io.fivem.data=${DATA_VER}
+
+COPY --from=builder /output/ /
+
+WORKDIR /config
+EXPOSE 30120
+
+CMD [""]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/entrypoint"]

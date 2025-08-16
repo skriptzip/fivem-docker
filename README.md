@@ -1,40 +1,60 @@
-# FiveM Server in Docker
-With this Docker you can run FiveM (GTA V MOD SERVER) it will automatically download the latest version or if you want to updated it yourself set the 'Manual Updates' to 'true' (without quotes).
-The Docker will automatically extract it and download all other required files (resources, server.cfg).
-You can get fx.tar.xz from here: https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/
-To run this container you must provide a valid Server Key (you can get them from here: https://keymaster.fivem.net/) and your prefered Server Name.
+# [skriptzip/fivem-docker]
 
-Update Notice: Simply restart the container and it will download the newest version or if you set 'Manual Updates' to 'true' place the new fx.tar.xz in the main directory and restart the container.
+This docker image allows you to run a server for FiveM, a modded GTA multiplayer program.
+Upon first run, the configuration is generated in the host mount for the `/config` directory.
+The container should be stopped so fivem can be configured to the user requirements in the `server.cfg`.
 
+## License Key
 
-## Env params
-| Name | Value | Example |
-| --- | --- | --- |
-| SERVER_DIR | Folder for gamefile | /serverdata/serverfiles |
-| GAME_CONFIG | The name of your server configuration file | server.cfg |
-| SERVER_KEY | Place your server key obtained from: https://keymaster.fivem.net/ here | placeyourkeyhere |
-| START_VARS | Enter your extra startup variables here if needed | |
-| SRV_ADR | The master server adress for the FiveM server download | https://runtime.fivem.net/artifacts/fi... |
-| MANUAL_UPDATES | Set to 'true' if you want to update the server manually (otherwise leave blank) | *blank* |
-| UID | User Identifier | 99 |
-| GID | Group Identifier | 100 |
+A freely obtained license key is required to use this server, which should be declared as `$LICENSE_KEY`. A tutorial on how to obtain a license key can be found [here](https://forum.fivem.net/t/explained-how-to-make-add-a-server-key/56120).
 
-## Run example
-```
-docker run --name FiveM -d \
-    -p 30110:30110 -p 30120:30120 \
-    -p 30110:30110/udp -p 30120:30120/udp \
-    -p 9016:8080 \
-    --env 'GAME_CONFIG=server.cfg' \
-    --env 'SERVER_KEY=placeyourkeyhere' \
-    --env 'SRV_ADR=https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/' \
-    --env 'UID=99' \
-    --env 'GID=100' \
-    --volume /path/to/fivem:/serverdata/serverfiles \
-    --restart=unless-stopped \
-    skriptzip/fivemserver
+## Usage
+
+Use the `docker-compose` script provided if you wish to run a couchdb server with FiveM, else use the line below:
+
+```sh
+docker run -d \
+  --name FiveM \
+  --restart=on-failure \
+  -e LICENSE_KEY=<your-license-here> \
+  -p 30120:30120 \
+  -p 30120:30120/udp \
+  -v /volumes/fivem:/config \
+  -ti \
+  spritsail/fivem
 ```
 
-https://artifacts.jgscripts.com/
+_It is important that you use `interactive` and `pseudo-tty` options otherwise the container will crash on startup_
+See [issue #3](https://github.com/spritsail/fivem/issues/3)
 
-Forked from ich777
+## Image tags
+
+This image has two tags - a `latest` tag (the default), based on the most recent FiveM build, and a `stable` tag, based on the "optional" FiveM release. We do not provide an image based on the recommended FiveM release as it is typically too stale.
+
+### Web UI (txAdmin)
+
+The web UI can be enabled by not passing any `+exec` config to the FXServer binary. This can be achieved by setting the `NO_DEFAULT_CONFIG` environment variable (see below).
+
+`txAdmin` stores it's configuration and database data in `/txData`, so a volume can be set up to persist this data:
+
+```sh
+docker run -d \
+  --name FiveM \
+  --restart=on-failure \
+  -e LICENSE_KEY=<your-license-here> \
+  -p 30120:30120 \
+  -p 30120:30120/udp \
+  -p 40120:40120 \ # Allow txAdmin's webserver port to be accessible
+  -v /volumes/fivem:/config \
+  -v /volumes/txData:/txData \ # Can use a named volume as well -v txData:/txData \
+  -ti \
+  spritsail/fivem
+```
+
+### Environment Variables
+
+- `LICENSE_KEY` - This is a required variable for the license key needed to start the server.
+- `RCON_PASSWORD` - A password to use for the RCON functionality of the fxserver. If not specified, a random 16 character password is assigned. This is only used upon creation of the default configs
+- `NO_DEFAULT_CONFIG` - Optional. Set to any non-zero value to disable the default exec config. This is required for txAdmin.
+- `NO_LICENSE_KEY` - Optional. Set to any non-zero length value to disable specifying the license key in the environment. Useful if your license key is in a config file.
+- `NO_ONESYNC` - Optional. Set to any non-zero value to disable OneSync being added to the default configs.

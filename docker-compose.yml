@@ -1,19 +1,18 @@
 services:
-  fivem-server:
-    build: .
-    container_name: fivem-server
-    restart: unless-stopped
-    ports:
-      - "30120:30120/tcp"  # FiveM server port
-      - "30120:30120/udp"  # FiveM server port (UDP)
-      - "30121:30121/tcp"  # FiveM server query port
-      - "30121:30121/udp"  # FiveM server query port (UDP)
-      - "40120:40120/tcp"  # txAdmin
-    volumes:
-      - ./serverdata:/serverdata/serverfiles
-    environment:
-      - SERVER_KEY=replace
-      - GAME_CONFIG=server.cfg
+  fivem:
+    image: ghcr.io/skriptzip/fivem-docker:latest
+    container_name: fivem
+    restart: always
     stdin_open: true
     tty: true
-
+    volumes:
+      - "/path/to/resources/folder:/config"
+      # Enable a volume mount for txAdmin's data files
+      # - "/path/to/txData/folder:/txData"
+    ports:
+      - "30120:30120"
+      - "30120:30120/udp"
+      # Allow txAdmin's webserver port to be accessible
+      # - "40120:40120"
+    environment:
+      LICENSE_KEY: "license-key-here"
