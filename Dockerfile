@@ -26,6 +26,8 @@ ADD server.cfg opt/cfx-server-data
 ADD entrypoint usr/bin/entrypoint
 RUN chmod +x /output/usr/bin/entrypoint
 
+RUN mkdir -p /output/sbin && cp /sbin/tini /output/sbin/tini
+
 # =============================
 # Final Stage
 # =============================
@@ -35,8 +37,7 @@ ARG FIVEM_VER
 ARG FIVEM_NUM
 ARG DATA_VER
 
-LABEL org.opencontainers.image.authors="you <you@example.com>" \
-      org.opencontainers.image.vendor="Custom" \
+LABEL org.opencontainers.image.authors="skriptzip <info@skript.zip>" \
       org.opencontainers.image.title="FiveM" \
       org.opencontainers.image.url="https://fivem.net" \
       org.opencontainers.image.description="FiveM dedicated server image" \
