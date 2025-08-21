@@ -1,18 +1,56 @@
+version: '3.8'
+
 services:
-  fivem:
+  fivem-server:
     image: ghcr.io/skriptzip/fivem-docker:latest
-    container_name: fivem
-    restart: always
-    stdin_open: true
-    tty: true
+    container_name: fivem-server
+    restart: unless-stopped
+    ports:
+      - "30120:30120/tcp"  # FiveM server port
+      - "30120:30120/udp"  # FiveM server port (UDP)
+      - "30121:30121/tcp"  # FiveM server query port / WebSocket port
+      - "30121:30121/udp"  # FiveM server query port (UDP)
     volumes:
       - "/path/to/resources/folder:/config"
       # Enable a volume mount for txAdmin's data files
       # - "/path/to/txData/folder:/txData"
-    ports:
-      - "30120:30120"
-      - "30120:30120/udp"
-      # Allow txAdmin's webserver port to be accessible
-      # - "40120:40120"
     environment:
       LICENSE_KEY: "license-key-here"
+      GAME_CONFIG: server.cfg
+      START_VARS: +set sv_hostname "My FiveM Server" +set sv_maxclients 32
+      ENABLE_WEBSOCKET: 1  # Enable WebSocket server
+      DATA_PERM: 770
+      UMASK: 000
+      UID: 99
+      GID: 100
+    stdin_open: true
+    tty: true
+    networks:
+      - fivem-network
+
+  # Optional: Separate service for WebSocket-only mode
+  fivem-websocket:
+    image: ghcr.io/skriptzip/fivem-docker:latest
+    container_name: fivem-websocket
+    restart: unless-stopped
+    ports:
+      - "30122:30120/tcp"  # FiveM server port (alternative)
+      - "30122:30120/udp"  # FiveM server port (UDP, alternative)
+      - "30123:30121/tcp"  # WebSocket port
+    volumes:
+      - "/path/to/resources/folder:/config"
+      # Enable a volume mount for txAdmin's data files
+      # - "/path/to/txData/folder:/txData"
+    environment:
+      LICENSE_KEY: "license-key-here"
+      ENABLE_WEBSOCKET: 1  # Enable WebSocket server
+    stdin_open: true
+    tty: true
+    networks:
+      - fivem-network
+    profiles:
+      - websocket  # Only start with --profile websocket
+
+networks:
+  fivem-network:
+    driver: bridge

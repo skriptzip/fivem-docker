@@ -42,10 +42,17 @@ if [ -z "${NO_LICENSE_KEY}${NO_LICENCE_KEY}" ]; then
     CONFIG_ARGS="$CONFIG_ARGS +set sv_licenseKey ${LICENSE_KEY}"
 fi
 
-exec /opt/cfx-server/ld-musl-x86_64.so.1 \
-    --library-path "/usr/lib/v8/:/lib/:/usr/lib/" \
-    -- \
-    /opt/cfx-server/FXServer \
-        +set citizen_dir /opt/cfx-server/citizen/ \
-        $CONFIG_ARGS \
-        $*
+# Check if WebSocket mode is enabled
+if [ -n "$ENABLE_WEBSOCKET" ]; then
+    >&2 echo "Starting FiveM server with WebSocket support..."
+    exec node /usr/local/server.js $CONFIG_ARGS $*
+else
+    >&2 echo "Starting FiveM server (standard mode)..."
+    exec /opt/cfx-server/ld-musl-x86_64.so.1 \
+        --library-path "/usr/lib/v8/:/lib/:/usr/lib/" \
+        -- \
+        /opt/cfx-server/FXServer \
+            +set citizen_dir /opt/cfx-server/citizen/ \
+            $CONFIG_ARGS \
+            $*
+fi

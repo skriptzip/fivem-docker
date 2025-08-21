@@ -12,7 +12,7 @@ ARG DATA_VER
 
 WORKDIR /output
 
-RUN apk add --no-cache wget xz tar \
+RUN apk add --no-cache wget xz tar nodejs npm \
  && wget -O- https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/${FIVEM_VER}/fx.tar.xz \
         | tar xJ --strip-components=1 \
             --exclude alpine/dev --exclude alpine/proc \
@@ -21,10 +21,15 @@ RUN apk add --no-cache wget xz tar \
  && wget -O- https://github.com/citizenfx/cfx-server-data/archive/${DATA_VER}.tar.gz \
         | tar xz --strip-components=1 -C opt/cfx-server-data
 
-# Add config + entrypoint
+# Add config + entrypoint + websocket server
 ADD server.cfg opt/cfx-server-data
+ADD package.json usr/local/
+ADD server.js usr/local/
 ADD entrypoint usr/bin/entrypoint
 RUN chmod +x /output/usr/bin/entrypoint
+
+# Install Node.js dependencies
+RUN cd /output/usr/local && npm install --production
 
 RUN mkdir -p /output/sbin && cp /sbin/tini /output/sbin/tini
 
