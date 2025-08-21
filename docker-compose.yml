@@ -19,10 +19,10 @@ services:
       GAME_CONFIG: server.cfg
       START_VARS: +set sv_hostname "My FiveM Server" +set sv_maxclients 32
       ENABLE_WEBSOCKET: 1  # Enable WebSocket server
-      DATA_PERM: 770
-      UMASK: 000
-      UID: 99
-      GID: 100
+      DATA_PERM: "770"
+      UMASK: "000"
+      UID: "99"
+      GID: "100"
     stdin_open: true
     tty: true
     networks:
