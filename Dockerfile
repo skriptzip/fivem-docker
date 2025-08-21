@@ -31,6 +31,13 @@ RUN chmod +x /output/usr/bin/entrypoint
 # Install Node.js dependencies
 RUN cd /output/usr/local && npm install --production
 
+# Copy Node.js binary and required libraries
+RUN mkdir -p /output/usr/bin /output/lib /output/usr/lib \
+ && cp /usr/bin/node /output/usr/bin/node \
+ && cp /lib/ld-musl-x86_64.so.1 /output/lib/ \
+ && cp -r /usr/lib/libstdc++* /output/usr/lib/ 2>/dev/null || true \
+ && cp -r /usr/lib/libgcc_s* /output/usr/lib/ 2>/dev/null || true
+
 RUN mkdir -p /output/sbin && cp /sbin/tini /output/sbin/tini
 
 # =============================
@@ -53,7 +60,7 @@ LABEL org.opencontainers.image.authors="skriptzip <info@skript.zip>" \
 COPY --from=builder /output/ /
 
 WORKDIR /config
-EXPOSE 30120
+EXPOSE 30120 30121
 
 CMD [""]
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/entrypoint"]
