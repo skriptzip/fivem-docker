@@ -23,7 +23,6 @@ if [ -z "${NO_DEFAULT_CONFIG}" ]; then
     CONFIG_ARGS="$CONFIG_ARGS $ONESYNC_ARGS +exec /config/server.cfg"
 fi
 
-# English is hard
 if [ -z "${NO_LICENSE_KEY}${NO_LICENCE_KEY}" ]; then
     if [ -z "${LICENSE_KEY}" ] && [ -n "${LICENCE_KEY}" ]; then
         LICENSE_KEY="${LICENCE_KEY}"
