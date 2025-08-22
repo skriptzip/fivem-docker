@@ -21,11 +21,11 @@ RUN apk add --no-cache wget xz tar nodejs npm \
  && wget -O- https://github.com/citizenfx/cfx-server-data/archive/${DATA_VER}.tar.gz \
         | tar xz --strip-components=1 -C opt/cfx-server-data
 
-# Add config + entrypoint + websocket server
-ADD server.cfg opt/cfx-server-data
-ADD package.json usr/local/
-ADD server.js usr/local/
-ADD entrypoint usr/bin/entrypoint
+# Add config + entrypoint + websocket server (fixed paths)
+ADD config/server.cfg opt/cfx-server-data/
+ADD config/package.json usr/local/
+ADD config/server.js usr/local/
+ADD config/entrypoint usr/bin/entrypoint
 RUN chmod +x /output/usr/bin/entrypoint
 
 # Install Node.js dependencies
@@ -54,6 +54,12 @@ LABEL org.opencontainers.image.authors="skriptzip <info@skript.zip>" \
       io.fivem.data=${DATA_VER}
 
 COPY --from=builder /output/ /
+
+# Debug: Check if entrypoint exists and fix line endings
+RUN ls -la /usr/bin/entrypoint || echo "Entrypoint not found!" \
+ && head -1 /usr/bin/entrypoint | od -c \
+ && sed -i 's/\r$//' /usr/bin/entrypoint \
+ && chmod +x /usr/bin/entrypoint
 
 WORKDIR /config
 EXPOSE 30120 30121

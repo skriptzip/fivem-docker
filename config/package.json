@@ -1,0 +1,13 @@
+{
+  "name": "fivem-websocket-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for FiveM Docker container",
+  "type": "module",
+  "main": "server.js",
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

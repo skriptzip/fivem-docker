@@ -1,56 +1,30 @@
-version: '3.8'
-
 services:
   fivem-server:
     image: ghcr.io/skriptzip/fivem-docker:latest
-    container_name: fivem-server
-    restart: unless-stopped
-    ports:
-      - "30120:30120/tcp"  # FiveM server port
-      - "30120:30120/udp"  # FiveM server port (UDP)
-      - "30121:30121/tcp"  # FiveM server query port / WebSocket port
-      - "30121:30121/udp"  # FiveM server query port (UDP)
-    volumes:
-      - "/path/to/resources/folder:/config"
-      # Enable a volume mount for txAdmin's data files
-      # - "/path/to/txData/folder:/txData"
+    container_name: fivem
+    restart: on-failure
     environment:
-      LICENSE_KEY: "license-key-here"
-      GAME_CONFIG: server.cfg
-      START_VARS: +set sv_hostname "My FiveM Server" +set sv_maxclients 32
-      ENABLE_WEBSOCKET: 1  # Enable WebSocket server
-      DATA_PERM: "770"
-      UMASK: "000"
-      UID: "99"
-      GID: "100"
-    stdin_open: true
-    tty: true
-    networks:
-      - fivem-network
-
-  # Optional: Separate service for WebSocket-only mode
-  fivem-websocket:
-    image: ghcr.io/skriptzip/fivem-docker:latest
-    container_name: fivem-websocket
-    restart: unless-stopped
+      - LICENSE_KEY=${LICENSE_KEY}
+      - ENABLE_WEBSOCKET=1
     ports:
-      - "30122:30120/tcp"  # FiveM server port (alternative)
-      - "30122:30120/udp"  # FiveM server port (UDP, alternative)
-      - "30123:30121/tcp"  # WebSocket port
+      - "30120:30120"
+      - "30120:30120/udp"
+      - "30121:30121" 
     volumes:
-      - "/path/to/resources/folder:/config"
-      # Enable a volume mount for txAdmin's data files
-      # - "/path/to/txData/folder:/txData"
-    environment:
-      LICENSE_KEY: "license-key-here"
-      ENABLE_WEBSOCKET: 1  # Enable WebSocket server
-    stdin_open: true
+      - ./fivem-data:/config
     tty: true
-    networks:
-      - fivem-network
-    profiles:
-      - websocket  # Only start with --profile websocket
-
-networks:
-  fivem-network:
-    driver: bridge
+  fivem-local-server:
+    build:
+      context: .
+    container_name: fivem-local
+    restart: on-failure
+    environment:
+      - LICENSE_KEY=${LICENSE_KEY}
+      - ENABLE_WEBSOCKET=1
+    ports:
+      - "30120:30120"
+      - "30120:30120/udp"
+      - "30121:30121" 
+    volumes:
+      - ./fivem-data:/config
+    tty: true
