@@ -3,6 +3,11 @@ import WebSocket, { WebSocketServer } from "ws";
 
 console.log("Starting WebSocket server on port 30121...");
 
+    const additional_args = [
+            "+set", "citizen_dir", "/opt/cfx-server/citizen/",
+            ...process.argv.slice(2) // Pass through any additional arguments
+    ];
+
 const wss = new WebSocketServer({ port: 30121 });
 let fxServer = null;
 let connectedClients = new Set();
@@ -11,16 +16,11 @@ let connectedClients = new Set();
 function startFiveM() {
     console.log("Starting FiveM server...");
     
-    const args = [
-        "+set", "citizen_dir", "/opt/cfx-server/citizen/",
-        ...process.argv.slice(2) // Pass through any additional arguments
-    ];
-    
     fxServer = spawn("/opt/cfx-server/ld-musl-x86_64.so.1", [
         "--library-path", "/usr/lib/v8/:/lib/:/usr/lib/",
         "--",
         "/opt/cfx-server/FXServer",
-        ...args
+        ...additional_args
     ], {
         cwd: "/config",
         stdio: ['pipe', 'pipe', 'pipe']

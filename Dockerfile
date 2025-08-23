@@ -22,11 +22,15 @@ RUN apk add --no-cache wget xz tar nodejs npm \
         | tar xz --strip-components=1 -C opt/cfx-server-data
 
 # Add config + entrypoint + websocket server (fixed paths)
-ADD config/server.cfg opt/cfx-server-data/
-ADD config/package.json usr/local/
-ADD config/server.js usr/local/
-ADD config/entrypoint usr/bin/entrypoint
-RUN chmod +x /output/usr/bin/entrypoint
+COPY config/server.cfg opt/cfx-server-data/
+COPY config/package.json usr/local/
+COPY config/server.js usr/local/
+COPY config/entrypoint usr/bin/entrypoint
+RUN chmod +x /output/usr/bin/entrypoint \
+ && ls -la /output/usr/bin/entrypoint \
+ && ls -la /output/usr/local/package.json \
+ && ls -la /output/usr/local/server.js \
+ && head -5 /output/usr/local/server.js
 
 # Install Node.js dependencies
 RUN cd /output/usr/local && npm install --production
